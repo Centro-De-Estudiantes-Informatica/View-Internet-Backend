@@ -1,0 +1,2337 @@
+{
+  "openapi": "3.0.0",
+  "paths": {
+    "/health": {
+      "get": {
+        "operationId": "HealthController_check",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "health"
+        ]
+      }
+    },
+    "/auth/login": {
+      "post": {
+        "operationId": "AuthController_login",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/LoginDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SessionDto"
+                }
+              }
+            }
+          }
+        },
+        "summary": "Iniciar sesión con cédula y contraseña",
+        "tags": [
+          "auth"
+        ]
+      }
+    },
+    "/auth/change-password": {
+      "post": {
+        "operationId": "AuthController_changePassword",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ChangePasswordDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SessionDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Cambiar la contraseña; emite un token nuevo e invalida los anteriores",
+        "tags": [
+          "auth"
+        ]
+      }
+    },
+    "/me": {
+      "get": {
+        "operationId": "AuthController_me",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProfileDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Perfil de la persona autenticada",
+        "tags": [
+          "auth"
+        ]
+      }
+    },
+    "/billing/current": {
+      "get": {
+        "operationId": "BillingController_current",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/BillingCurrentDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Cuota del periodo actual en USD, VES y COP con la tasa usada",
+        "tags": [
+          "billing"
+        ]
+      }
+    },
+    "/billing/fee": {
+      "put": {
+        "operationId": "BillingController_setFee",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/SetFeeDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/FeeDto"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Requiere rol ADMIN"
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Cambiar la cuota mensual (aplica a los periodos que se abran después)",
+        "tags": [
+          "billing"
+        ]
+      }
+    },
+    "/billing/rates": {
+      "post": {
+        "operationId": "BillingController_setRate",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/SetRateDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RateDto"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Requiere rol ADMIN"
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Registrar (o corregir) la tasa de un día",
+        "tags": [
+          "billing"
+        ]
+      },
+      "get": {
+        "operationId": "BillingController_listRates",
+        "parameters": [
+          {
+            "name": "currency",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "enum": [
+                "VES",
+                "COP"
+              ]
+            }
+          },
+          {
+            "name": "limit",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "minimum": 1,
+              "maximum": 365,
+              "default": 30,
+              "allOf": [
+                {
+                  "$ref": "#/components/schemas/Object"
+                }
+              ]
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/RateDto"
+                  }
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Requiere rol ADMIN"
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Historial de tasas, de la más reciente a la más antigua",
+        "tags": [
+          "billing"
+        ]
+      }
+    },
+    "/users": {
+      "post": {
+        "operationId": "UsersController_create",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateUserDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CreatedUserDto"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Requiere rol ADMIN"
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Crear persona con contraseña temporal",
+        "tags": [
+          "users"
+        ]
+      },
+      "get": {
+        "operationId": "UsersController_list",
+        "parameters": [
+          {
+            "name": "q",
+            "required": false,
+            "in": "query",
+            "description": "Cédula (3+ dígitos) o nombre, sin importar acentos",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "role",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "enum": [
+                "ESTUDIANTE",
+                "ADMIN"
+              ]
+            }
+          },
+          {
+            "name": "estado",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "enum": [
+                "AL_DIA",
+                "PARCIAL",
+                "EN_REVISION",
+                "PENDIENTE"
+              ]
+            }
+          },
+          {
+            "name": "periodo",
+            "required": false,
+            "in": "query",
+            "description": "Por defecto, el periodo actual",
+            "schema": {
+              "example": "2026-10",
+              "type": "string"
+            }
+          },
+          {
+            "name": "active",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "boolean"
+            }
+          },
+          {
+            "name": "page",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "minimum": 1,
+              "default": 1,
+              "allOf": [
+                {
+                  "$ref": "#/components/schemas/Object"
+                }
+              ]
+            }
+          },
+          {
+            "name": "pageSize",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "minimum": 1,
+              "maximum": 100,
+              "default": 20,
+              "allOf": [
+                {
+                  "$ref": "#/components/schemas/Object"
+                }
+              ]
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/UserPageDto"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Requiere rol ADMIN"
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Listado paginado con búsqueda y estado del periodo",
+        "tags": [
+          "users"
+        ]
+      }
+    },
+    "/users/{id}": {
+      "get": {
+        "operationId": "UsersController_get",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProfileDto"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Requiere rol ADMIN"
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "tags": [
+          "users"
+        ]
+      },
+      "patch": {
+        "operationId": "UsersController_update",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateUserDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProfileDto"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Requiere rol ADMIN"
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Editar nombre/teléfono o activar/desactivar la cuenta",
+        "tags": [
+          "users"
+        ]
+      }
+    },
+    "/users/{id}/role": {
+      "patch": {
+        "operationId": "UsersController_changeRole",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ChangeRoleDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProfileDto"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Requiere rol ADMIN"
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Cambiar el rol (no el propio; siempre queda un administrador)",
+        "tags": [
+          "users"
+        ]
+      }
+    },
+    "/users/{id}/reset-password": {
+      "post": {
+        "operationId": "UsersController_resetPassword",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TemporaryPasswordDto"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Requiere rol ADMIN"
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Restablecer contraseña; invalida las sesiones de esa persona",
+        "tags": [
+          "users"
+        ]
+      }
+    },
+    "/payments": {
+      "get": {
+        "operationId": "PaymentsController_list",
+        "parameters": [
+          {
+            "name": "status",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "enum": [
+                "EN_REVISION",
+                "APROBADO",
+                "RECHAZADO",
+                "ANULADO"
+              ]
+            }
+          },
+          {
+            "name": "periodo",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "example": "2026-10",
+              "type": "string"
+            }
+          },
+          {
+            "name": "userId",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          },
+          {
+            "name": "method",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "enum": [
+                "EFECTIVO",
+                "PAGO_MOVIL"
+              ]
+            }
+          },
+          {
+            "name": "currency",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "enum": [
+                "USD",
+                "VES",
+                "COP"
+              ]
+            }
+          },
+          {
+            "name": "page",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "minimum": 1,
+              "default": 1,
+              "allOf": [
+                {
+                  "$ref": "#/components/schemas/Object"
+                }
+              ]
+            }
+          },
+          {
+            "name": "pageSize",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "minimum": 1,
+              "maximum": 100,
+              "default": 20,
+              "allOf": [
+                {
+                  "$ref": "#/components/schemas/Object"
+                }
+              ]
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PaymentPageDto"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Requiere rol ADMIN"
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Listado de pagos (la cola de revisión es status=EN_REVISION)",
+        "tags": [
+          "payments"
+        ]
+      }
+    },
+    "/payments/cash": {
+      "post": {
+        "operationId": "PaymentsController_registerCash",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CashPaymentDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PaymentDto"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Requiere rol ADMIN"
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Registrar pago en efectivo (queda APROBADO)",
+        "tags": [
+          "payments"
+        ]
+      }
+    },
+    "/payments/{id}/approve": {
+      "post": {
+        "operationId": "PaymentsController_approve",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ApproveDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PaymentDto"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Requiere rol ADMIN"
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Aprobar un pago EN_REVISION",
+        "tags": [
+          "payments"
+        ]
+      }
+    },
+    "/payments/{id}/reject": {
+      "post": {
+        "operationId": "PaymentsController_reject",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ReasonDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PaymentDto"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Requiere rol ADMIN"
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Rechazar un pago EN_REVISION con motivo (lo ve el estudiante)",
+        "tags": [
+          "payments"
+        ]
+      }
+    },
+    "/payments/{id}/void": {
+      "post": {
+        "operationId": "PaymentsController_void",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ReasonDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PaymentDto"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Requiere rol ADMIN"
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Anular un pago APROBADO con motivo (los pagos nunca se borran)",
+        "tags": [
+          "payments"
+        ]
+      }
+    },
+    "/payments/{id}/receipt": {
+      "get": {
+        "operationId": "PaymentsController_receipt",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ReceiptUrlDto"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Requiere rol ADMIN"
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "URL firmada (5 min) de la captura del pago móvil",
+        "tags": [
+          "payments"
+        ]
+      }
+    },
+    "/me/status": {
+      "get": {
+        "operationId": "MePaymentsController_myStatus",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/MyStatusDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Mi estado del periodo actual, periodos adeudados y monto pendiente",
+        "tags": [
+          "me"
+        ]
+      }
+    },
+    "/me/payments": {
+      "get": {
+        "operationId": "MePaymentsController_myPayments",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/PaymentDto"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Mi historial de pagos, incluidos los rechazados con su motivo",
+        "tags": [
+          "me"
+        ]
+      }
+    },
+    "/me/payments/mobile": {
+      "post": {
+        "operationId": "MePaymentsController_reportMobile",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "multipart/form-data": {
+              "schema": {
+                "$ref": "#/components/schemas/MobilePaymentFormDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PaymentDto"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Requiere rol ESTUDIANTE"
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Reportar un pago móvil en VES (queda EN_REVISION)",
+        "tags": [
+          "me"
+        ]
+      }
+    },
+    "/metrics/summary": {
+      "get": {
+        "operationId": "MetricsController_summary",
+        "parameters": [
+          {
+            "name": "periodo",
+            "required": false,
+            "in": "query",
+            "description": "Por defecto, el periodo actual",
+            "schema": {
+              "example": "2026-10",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SummaryDto"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Requiere rol ADMIN"
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Resumen del periodo para el dashboard",
+        "tags": [
+          "metrics"
+        ]
+      }
+    },
+    "/metrics/monthly": {
+      "get": {
+        "operationId": "MetricsController_monthly",
+        "parameters": [
+          {
+            "name": "months",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "minimum": 1,
+              "maximum": 24,
+              "default": 6,
+              "allOf": [
+                {
+                  "$ref": "#/components/schemas/Object"
+                }
+              ]
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/MonthlyPointDto"
+                  }
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Requiere rol ADMIN"
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Serie mensual de recaudado en USD (meses sin pagos en 0)",
+        "tags": [
+          "metrics"
+        ]
+      }
+    },
+    "/metrics/recent": {
+      "get": {
+        "operationId": "MetricsController_recent",
+        "parameters": [
+          {
+            "name": "limit",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "minimum": 1,
+              "maximum": 50,
+              "default": 10,
+              "allOf": [
+                {
+                  "$ref": "#/components/schemas/Object"
+                }
+              ]
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/RecentPaymentDto"
+                  }
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Requiere rol ADMIN"
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Últimos pagos aprobados",
+        "tags": [
+          "metrics"
+        ]
+      }
+    }
+  },
+  "info": {
+    "title": "View Internet API",
+    "description": "Control de pagos del internet de la sede de Informática. Los montos se serializan como strings decimales. Los errores responden `{ code, message }`.",
+    "version": "0.1.0",
+    "contact": {}
+  },
+  "tags": [],
+  "servers": [],
+  "components": {
+    "securitySchemes": {
+      "bearer": {
+        "scheme": "bearer",
+        "bearerFormat": "JWT",
+        "type": "http"
+      }
+    },
+    "schemas": {
+      "LoginDto": {
+        "type": "object",
+        "properties": {
+          "cedula": {
+            "type": "string",
+            "example": "V-28.123.456",
+            "description": "Con o sin puntos, guiones ni prefijo"
+          },
+          "password": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "cedula",
+          "password"
+        ]
+      },
+      "ProfileDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "cedula": {
+            "type": "string",
+            "example": "V-28.123.456"
+          },
+          "fullName": {
+            "type": "string"
+          },
+          "phone": {
+            "type": "string",
+            "nullable": true
+          },
+          "role": {
+            "type": "string",
+            "enum": [
+              "ESTUDIANTE",
+              "ADMIN"
+            ]
+          },
+          "active": {
+            "type": "boolean"
+          },
+          "mustChangePassword": {
+            "type": "boolean"
+          },
+          "createdAt": {
+            "format": "date-time",
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "cedula",
+          "fullName",
+          "role",
+          "active",
+          "mustChangePassword",
+          "createdAt"
+        ]
+      },
+      "SessionDto": {
+        "type": "object",
+        "properties": {
+          "accessToken": {
+            "type": "string"
+          },
+          "tokenType": {
+            "type": "string",
+            "example": "Bearer"
+          },
+          "expiresIn": {
+            "type": "number",
+            "description": "Segundos de validez del token"
+          },
+          "role": {
+            "type": "string",
+            "enum": [
+              "ESTUDIANTE",
+              "ADMIN"
+            ]
+          },
+          "mustChangePassword": {
+            "type": "boolean"
+          },
+          "user": {
+            "$ref": "#/components/schemas/ProfileDto"
+          }
+        },
+        "required": [
+          "accessToken",
+          "tokenType",
+          "expiresIn",
+          "role",
+          "mustChangePassword",
+          "user"
+        ]
+      },
+      "ChangePasswordDto": {
+        "type": "object",
+        "properties": {
+          "currentPassword": {
+            "type": "string"
+          },
+          "newPassword": {
+            "type": "string",
+            "minLength": 8,
+            "maxLength": 72
+          }
+        },
+        "required": [
+          "currentPassword",
+          "newPassword"
+        ]
+      },
+      "FeeByCurrencyDto": {
+        "type": "object",
+        "properties": {
+          "USD": {
+            "type": "string",
+            "example": "5.00"
+          },
+          "VES": {
+            "type": "string",
+            "example": "1000.00",
+            "nullable": true
+          },
+          "COP": {
+            "type": "string",
+            "example": "20000.00",
+            "nullable": true
+          }
+        },
+        "required": [
+          "USD",
+          "VES",
+          "COP"
+        ]
+      },
+      "CurrentRateDto": {
+        "type": "object",
+        "properties": {
+          "ratePerUsd": {
+            "type": "string",
+            "example": "200.0000"
+          },
+          "effectiveDate": {
+            "type": "string",
+            "example": "2026-10-26"
+          },
+          "stale": {
+            "type": "boolean",
+            "description": "true si la tasa tiene más de 1 día"
+          }
+        },
+        "required": [
+          "ratePerUsd",
+          "effectiveDate",
+          "stale"
+        ]
+      },
+      "RatesByCurrencyDto": {
+        "type": "object",
+        "properties": {
+          "VES": {
+            "nullable": true,
+            "type": "object",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/CurrentRateDto"
+              }
+            ]
+          },
+          "COP": {
+            "nullable": true,
+            "type": "object",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/CurrentRateDto"
+              }
+            ]
+          }
+        },
+        "required": [
+          "VES",
+          "COP"
+        ]
+      },
+      "BillingCurrentDto": {
+        "type": "object",
+        "properties": {
+          "periodo": {
+            "type": "string",
+            "example": "2026-10"
+          },
+          "feeUsd": {
+            "type": "string",
+            "example": "5.00"
+          },
+          "fee": {
+            "$ref": "#/components/schemas/FeeByCurrencyDto"
+          },
+          "rates": {
+            "$ref": "#/components/schemas/RatesByCurrencyDto"
+          }
+        },
+        "required": [
+          "periodo",
+          "feeUsd",
+          "fee",
+          "rates"
+        ]
+      },
+      "SetFeeDto": {
+        "type": "object",
+        "properties": {
+          "feeUsd": {
+            "type": "string",
+            "example": "5.00",
+            "description": "Cuota mensual en USD"
+          }
+        },
+        "required": [
+          "feeUsd"
+        ]
+      },
+      "FeeDto": {
+        "type": "object",
+        "properties": {
+          "feeUsd": {
+            "type": "string",
+            "example": "6.00",
+            "description": "Cuota vigente para los periodos que se abran"
+          },
+          "currentPeriod": {
+            "type": "string",
+            "example": "2026-10"
+          },
+          "currentPeriodFeeUsd": {
+            "type": "string",
+            "example": "5.00",
+            "description": "Cuota congelada del periodo actual"
+          }
+        },
+        "required": [
+          "feeUsd",
+          "currentPeriod",
+          "currentPeriodFeeUsd"
+        ]
+      },
+      "SetRateDto": {
+        "type": "object",
+        "properties": {
+          "currency": {
+            "type": "string",
+            "enum": [
+              "VES",
+              "COP"
+            ]
+          },
+          "ratePerUsd": {
+            "type": "string",
+            "example": "200.00",
+            "description": "Unidades de la moneda por 1 USD"
+          },
+          "effectiveDate": {
+            "type": "string",
+            "example": "2026-10-26",
+            "description": "Por defecto, hoy"
+          }
+        },
+        "required": [
+          "currency",
+          "ratePerUsd"
+        ]
+      },
+      "RateDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "currency": {
+            "type": "string",
+            "enum": [
+              "VES",
+              "COP"
+            ]
+          },
+          "ratePerUsd": {
+            "type": "string",
+            "example": "200.0000"
+          },
+          "effectiveDate": {
+            "type": "string",
+            "example": "2026-10-26"
+          },
+          "createdAt": {
+            "format": "date-time",
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "currency",
+          "ratePerUsd",
+          "effectiveDate",
+          "createdAt"
+        ]
+      },
+      "Object": {
+        "type": "object",
+        "properties": {}
+      },
+      "CreateUserDto": {
+        "type": "object",
+        "properties": {
+          "cedula": {
+            "type": "string",
+            "example": "V-30.555.111"
+          },
+          "fullName": {
+            "type": "string",
+            "example": "José Rodríguez"
+          },
+          "phone": {
+            "type": "string",
+            "example": "04141234567"
+          },
+          "role": {
+            "type": "string",
+            "enum": [
+              "ESTUDIANTE",
+              "ADMIN"
+            ],
+            "default": "ESTUDIANTE"
+          }
+        },
+        "required": [
+          "cedula",
+          "fullName"
+        ]
+      },
+      "CreatedUserDto": {
+        "type": "object",
+        "properties": {
+          "user": {
+            "$ref": "#/components/schemas/ProfileDto"
+          },
+          "temporaryPassword": {
+            "type": "string",
+            "description": "Se muestra una sola vez"
+          }
+        },
+        "required": [
+          "user",
+          "temporaryPassword"
+        ]
+      },
+      "UserPeriodDto": {
+        "type": "object",
+        "properties": {
+          "periodo": {
+            "type": "string",
+            "example": "2026-10"
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "AL_DIA",
+              "PARCIAL",
+              "EN_REVISION",
+              "PENDIENTE"
+            ]
+          },
+          "paidUsd": {
+            "type": "string",
+            "example": "3.00"
+          },
+          "feeUsd": {
+            "type": "string",
+            "example": "5.00"
+          }
+        },
+        "required": [
+          "periodo",
+          "status",
+          "paidUsd",
+          "feeUsd"
+        ]
+      },
+      "UserListItemDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "cedula": {
+            "type": "string",
+            "example": "V-28.123.456"
+          },
+          "fullName": {
+            "type": "string"
+          },
+          "phone": {
+            "type": "string",
+            "nullable": true
+          },
+          "role": {
+            "type": "string",
+            "enum": [
+              "ESTUDIANTE",
+              "ADMIN"
+            ]
+          },
+          "active": {
+            "type": "boolean"
+          },
+          "mustChangePassword": {
+            "type": "boolean"
+          },
+          "createdAt": {
+            "format": "date-time",
+            "type": "string"
+          },
+          "period": {
+            "nullable": true,
+            "description": "null si no hay cuota configurada",
+            "type": "object",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/UserPeriodDto"
+              }
+            ]
+          }
+        },
+        "required": [
+          "id",
+          "cedula",
+          "fullName",
+          "role",
+          "active",
+          "mustChangePassword",
+          "createdAt",
+          "period"
+        ]
+      },
+      "UserPageDto": {
+        "type": "object",
+        "properties": {
+          "items": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/UserListItemDto"
+            }
+          },
+          "total": {
+            "type": "number"
+          },
+          "page": {
+            "type": "number"
+          },
+          "pageSize": {
+            "type": "number"
+          }
+        },
+        "required": [
+          "items",
+          "total",
+          "page",
+          "pageSize"
+        ]
+      },
+      "UpdateUserDto": {
+        "type": "object",
+        "properties": {
+          "fullName": {
+            "type": "string"
+          },
+          "phone": {
+            "type": "string",
+            "nullable": true,
+            "description": "null para borrarlo"
+          },
+          "active": {
+            "type": "boolean"
+          }
+        }
+      },
+      "ChangeRoleDto": {
+        "type": "object",
+        "properties": {
+          "role": {
+            "type": "string",
+            "enum": [
+              "ESTUDIANTE",
+              "ADMIN"
+            ]
+          }
+        },
+        "required": [
+          "role"
+        ]
+      },
+      "TemporaryPasswordDto": {
+        "type": "object",
+        "properties": {
+          "temporaryPassword": {
+            "type": "string",
+            "description": "Se muestra una sola vez"
+          }
+        },
+        "required": [
+          "temporaryPassword"
+        ]
+      },
+      "PaymentUserDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "cedula": {
+            "type": "string",
+            "example": "V-28.123.456"
+          },
+          "fullName": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "cedula",
+          "fullName"
+        ]
+      },
+      "PaymentDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "user": {
+            "$ref": "#/components/schemas/PaymentUserDto"
+          },
+          "periodo": {
+            "type": "string",
+            "example": "2026-10"
+          },
+          "method": {
+            "type": "string",
+            "enum": [
+              "EFECTIVO",
+              "PAGO_MOVIL"
+            ]
+          },
+          "currency": {
+            "type": "string",
+            "enum": [
+              "USD",
+              "VES",
+              "COP"
+            ]
+          },
+          "amount": {
+            "type": "string",
+            "example": "1000.00"
+          },
+          "rate": {
+            "type": "string",
+            "example": "200.0000"
+          },
+          "rateDate": {
+            "type": "string",
+            "example": "2026-10-26",
+            "nullable": true
+          },
+          "amountUsd": {
+            "type": "string",
+            "example": "5.00"
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "EN_REVISION",
+              "APROBADO",
+              "RECHAZADO",
+              "ANULADO"
+            ]
+          },
+          "reference": {
+            "type": "string",
+            "nullable": true
+          },
+          "bank": {
+            "type": "string",
+            "nullable": true
+          },
+          "payerPhone": {
+            "type": "string",
+            "nullable": true
+          },
+          "paidAt": {
+            "type": "string",
+            "example": "2026-10-26"
+          },
+          "hasReceipt": {
+            "type": "boolean"
+          },
+          "note": {
+            "type": "string",
+            "nullable": true
+          },
+          "registeredBy": {
+            "type": "string",
+            "nullable": true
+          },
+          "reviewedBy": {
+            "type": "string",
+            "nullable": true
+          },
+          "reviewedAt": {
+            "format": "date-time",
+            "type": "string",
+            "nullable": true
+          },
+          "reviewNote": {
+            "type": "string",
+            "nullable": true,
+            "description": "Motivo de rechazo o nota de aprobación"
+          },
+          "voidedBy": {
+            "type": "string",
+            "nullable": true
+          },
+          "voidedAt": {
+            "format": "date-time",
+            "type": "string",
+            "nullable": true
+          },
+          "voidReason": {
+            "type": "string",
+            "nullable": true
+          },
+          "createdAt": {
+            "format": "date-time",
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "user",
+          "periodo",
+          "method",
+          "currency",
+          "amount",
+          "rate",
+          "rateDate",
+          "amountUsd",
+          "status",
+          "reference",
+          "bank",
+          "payerPhone",
+          "paidAt",
+          "hasReceipt",
+          "note",
+          "registeredBy",
+          "reviewedBy",
+          "reviewedAt",
+          "reviewNote",
+          "voidedBy",
+          "voidedAt",
+          "voidReason",
+          "createdAt"
+        ]
+      },
+      "PaymentPageDto": {
+        "type": "object",
+        "properties": {
+          "items": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/PaymentDto"
+            }
+          },
+          "total": {
+            "type": "number"
+          },
+          "page": {
+            "type": "number"
+          },
+          "pageSize": {
+            "type": "number"
+          }
+        },
+        "required": [
+          "items",
+          "total",
+          "page",
+          "pageSize"
+        ]
+      },
+      "CashPaymentDto": {
+        "type": "object",
+        "properties": {
+          "userId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "periodo": {
+            "type": "string",
+            "example": "2026-10"
+          },
+          "currency": {
+            "type": "string",
+            "enum": [
+              "USD",
+              "VES",
+              "COP"
+            ]
+          },
+          "amount": {
+            "type": "string",
+            "example": "5.00"
+          },
+          "paidAt": {
+            "type": "string",
+            "example": "2026-10-26",
+            "description": "Por defecto, hoy"
+          },
+          "note": {
+            "type": "string",
+            "maxLength": 500
+          }
+        },
+        "required": [
+          "userId",
+          "periodo",
+          "currency",
+          "amount"
+        ]
+      },
+      "ApproveDto": {
+        "type": "object",
+        "properties": {
+          "note": {
+            "type": "string",
+            "maxLength": 500
+          }
+        }
+      },
+      "ReasonDto": {
+        "type": "object",
+        "properties": {
+          "reason": {
+            "type": "string",
+            "example": "La referencia no aparece en el banco"
+          }
+        },
+        "required": [
+          "reason"
+        ]
+      },
+      "ReceiptUrlDto": {
+        "type": "object",
+        "properties": {
+          "url": {
+            "type": "string"
+          },
+          "expiresIn": {
+            "type": "number",
+            "example": 300
+          }
+        },
+        "required": [
+          "url",
+          "expiresIn"
+        ]
+      },
+      "PeriodBalanceDto": {
+        "type": "object",
+        "properties": {
+          "periodo": {
+            "type": "string",
+            "example": "2026-10"
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "AL_DIA",
+              "PARCIAL",
+              "EN_REVISION",
+              "PENDIENTE"
+            ]
+          },
+          "feeUsd": {
+            "type": "string",
+            "example": "5.00"
+          },
+          "paidUsd": {
+            "type": "string",
+            "example": "3.00"
+          },
+          "balanceUsd": {
+            "type": "string",
+            "example": "2.00"
+          },
+          "inReviewCount": {
+            "type": "number"
+          }
+        },
+        "required": [
+          "periodo",
+          "status",
+          "feeUsd",
+          "paidUsd",
+          "balanceUsd",
+          "inReviewCount"
+        ]
+      },
+      "AmountByCurrencyDto": {
+        "type": "object",
+        "properties": {
+          "USD": {
+            "type": "string",
+            "example": "2.00"
+          },
+          "VES": {
+            "type": "string",
+            "example": "400.00",
+            "nullable": true
+          },
+          "COP": {
+            "type": "string",
+            "example": "8000.00",
+            "nullable": true
+          }
+        },
+        "required": [
+          "USD",
+          "VES",
+          "COP"
+        ]
+      },
+      "MyStatusDto": {
+        "type": "object",
+        "properties": {
+          "current": {
+            "$ref": "#/components/schemas/PeriodBalanceDto"
+          },
+          "owedPeriods": {
+            "description": "Periodos no saldados, del más antiguo al más reciente",
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/PeriodBalanceDto"
+            }
+          },
+          "pending": {
+            "description": "Total pendiente a las tasas vigentes",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/AmountByCurrencyDto"
+              }
+            ]
+          }
+        },
+        "required": [
+          "current",
+          "owedPeriods",
+          "pending"
+        ]
+      },
+      "MobilePaymentFormDto": {
+        "type": "object",
+        "properties": {
+          "reference": {
+            "type": "string",
+            "example": "004512",
+            "description": "Número de referencia del pago móvil"
+          },
+          "bank": {
+            "type": "string",
+            "example": "0134",
+            "description": "Código del banco de origen (4 dígitos)"
+          },
+          "payerPhone": {
+            "type": "string",
+            "example": "04141234567"
+          },
+          "paidAt": {
+            "type": "string",
+            "example": "2026-10-26"
+          },
+          "amount": {
+            "type": "string",
+            "example": "1000.00"
+          },
+          "currency": {
+            "type": "string",
+            "enum": [
+              "USD",
+              "VES",
+              "COP"
+            ],
+            "default": "VES",
+            "description": "Solo VES"
+          },
+          "periodo": {
+            "type": "string",
+            "example": "2026-10",
+            "description": "Por defecto, el periodo actual"
+          },
+          "receipt": {
+            "type": "string",
+            "format": "binary",
+            "description": "JPG o PNG, máx. 5 MB"
+          }
+        },
+        "required": [
+          "reference",
+          "bank",
+          "payerPhone",
+          "paidAt",
+          "amount"
+        ]
+      },
+      "CollectedDto": {
+        "type": "object",
+        "properties": {
+          "amount": {
+            "type": "string",
+            "example": "1000.00",
+            "description": "Monto en la moneda original"
+          },
+          "amountUsd": {
+            "type": "string",
+            "example": "5.00"
+          },
+          "count": {
+            "type": "number"
+          }
+        },
+        "required": [
+          "amount",
+          "amountUsd",
+          "count"
+        ]
+      },
+      "CollectedByCurrencyDto": {
+        "type": "object",
+        "properties": {
+          "USD": {
+            "$ref": "#/components/schemas/CollectedDto"
+          },
+          "VES": {
+            "$ref": "#/components/schemas/CollectedDto"
+          },
+          "COP": {
+            "$ref": "#/components/schemas/CollectedDto"
+          }
+        },
+        "required": [
+          "USD",
+          "VES",
+          "COP"
+        ]
+      },
+      "StudentsByStatusDto": {
+        "type": "object",
+        "properties": {
+          "total": {
+            "type": "number",
+            "description": "Estudiantes activos considerados en el periodo"
+          },
+          "AL_DIA": {
+            "type": "number"
+          },
+          "PARCIAL": {
+            "type": "number"
+          },
+          "EN_REVISION": {
+            "type": "number"
+          },
+          "PENDIENTE": {
+            "type": "number"
+          }
+        },
+        "required": [
+          "total",
+          "AL_DIA",
+          "PARCIAL",
+          "EN_REVISION",
+          "PENDIENTE"
+        ]
+      },
+      "InReviewDto": {
+        "type": "object",
+        "properties": {
+          "period": {
+            "type": "number",
+            "description": "Pagos EN_REVISION del periodo"
+          },
+          "total": {
+            "type": "number",
+            "description": "Pagos EN_REVISION de todos los periodos (cola de revisión)"
+          }
+        },
+        "required": [
+          "period",
+          "total"
+        ]
+      },
+      "SummaryDto": {
+        "type": "object",
+        "properties": {
+          "periodo": {
+            "type": "string",
+            "example": "2026-10"
+          },
+          "feeUsd": {
+            "type": "string",
+            "example": "5.00"
+          },
+          "collected": {
+            "$ref": "#/components/schemas/CollectedByCurrencyDto"
+          },
+          "totalUsd": {
+            "type": "string",
+            "example": "120.00"
+          },
+          "expectedUsd": {
+            "type": "string",
+            "example": "200.00",
+            "description": "Estudiantes activos × cuota"
+          },
+          "percentCollected": {
+            "type": "string",
+            "example": "60.00",
+            "description": "Porcentaje cobrado (0–100+)"
+          },
+          "students": {
+            "$ref": "#/components/schemas/StudentsByStatusDto"
+          },
+          "inReview": {
+            "$ref": "#/components/schemas/InReviewDto"
+          }
+        },
+        "required": [
+          "periodo",
+          "feeUsd",
+          "collected",
+          "totalUsd",
+          "expectedUsd",
+          "percentCollected",
+          "students",
+          "inReview"
+        ]
+      },
+      "MonthlyPointDto": {
+        "type": "object",
+        "properties": {
+          "periodo": {
+            "type": "string",
+            "example": "2026-10"
+          },
+          "totalUsd": {
+            "type": "string",
+            "example": "120.00"
+          }
+        },
+        "required": [
+          "periodo",
+          "totalUsd"
+        ]
+      },
+      "RecentPaymentDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "user": {
+            "$ref": "#/components/schemas/PaymentUserDto"
+          },
+          "method": {
+            "type": "string",
+            "enum": [
+              "EFECTIVO",
+              "PAGO_MOVIL"
+            ]
+          },
+          "currency": {
+            "type": "string",
+            "enum": [
+              "USD",
+              "VES",
+              "COP"
+            ]
+          },
+          "amount": {
+            "type": "string",
+            "example": "1000.00"
+          },
+          "amountUsd": {
+            "type": "string",
+            "example": "5.00"
+          },
+          "periodo": {
+            "type": "string",
+            "example": "2026-10"
+          },
+          "paidAt": {
+            "type": "string",
+            "example": "2026-10-26"
+          },
+          "approvedAt": {
+            "format": "date-time",
+            "type": "string",
+            "description": "Momento en que quedó aprobado"
+          }
+        },
+        "required": [
+          "id",
+          "user",
+          "method",
+          "currency",
+          "amount",
+          "amountUsd",
+          "periodo",
+          "paidAt",
+          "approvedAt"
+        ]
+      }
+    }
+  }
+}
