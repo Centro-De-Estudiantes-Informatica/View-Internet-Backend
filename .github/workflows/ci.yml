@@ -1,0 +1,59 @@
+name: CI
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+
+permissions:
+  contents: read
+
+env:
+  SCARF_ANALYTICS: 'false'
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:17-alpine
+        env:
+          POSTGRES_USER: view
+          POSTGRES_PASSWORD: view
+          POSTGRES_DB: view_internet_test
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U view -d view_internet_test"
+          --health-interval 2s
+          --health-retries 20
+    env:
+      TEST_DATABASE_URL: postgresql://view:view@localhost:5432/view_internet_test
+      JWT_SECRET: ci-secret-ci-secret-ci-secret-ci-secret
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - name: Lint
+        run: npm run lint
+      - name: Formato
+        run: npm run format:check
+      - name: Tipos
+        run: npm run typecheck
+      - name: Pruebas unitarias
+        run: npm test
+      - name: Pruebas e2e
+        run: npm run test:e2e
+      - name: Build
+        run: npm run build
+      - name: OpenAPI al día
+        run: |
+          npm run openapi
+          git diff --exit-code openapi.json || (echo "::error::openapi.json desactualizado: ejecuta npm run openapi" && exit 1)
+      - uses: actions/upload-artifact@v4
+        with:
+          name: openapi
+          path: openapi.json

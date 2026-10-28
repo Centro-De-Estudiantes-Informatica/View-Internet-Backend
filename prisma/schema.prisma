@@ -1,0 +1,169 @@
+// Montos siempre como Decimal; nunca Float.
+// Nota: el índice único parcial de pagos (bank, reference) y los CHECK viven solo en las
+// migraciones SQL; Prisma no los modela. Si `prisma migrate dev` propone
+// borrarlos en una migración nueva, quitar esas líneas antes de aplicarla.
+
+generator client {
+  provider        = "prisma-client-js"
+  previewFeatures = ["postgresqlExtensions"]
+}
+
+datasource db {
+  provider   = "postgresql"
+  url        = env("DATABASE_URL")
+  directUrl  = env("DIRECT_URL")
+  extensions = [unaccent, pg_trgm]
+}
+
+enum CedulaPrefix {
+  V
+  E
+}
+
+enum Role {
+  ESTUDIANTE
+  ADMIN
+}
+
+enum Currency {
+  USD
+  VES
+  COP
+}
+
+enum RateCurrency {
+  VES
+  COP
+}
+
+enum PaymentMethod {
+  EFECTIVO
+  PAGO_MOVIL
+}
+
+enum PaymentStatus {
+  EN_REVISION
+  APROBADO
+  RECHAZADO
+  ANULADO
+}
+
+model User {
+  id                 String       @id @default(uuid()) @db.Uuid
+  cedulaPrefix       CedulaPrefix @map("cedula_prefix")
+  cedulaDigits       String       @map("cedula_digits") @db.VarChar(10)
+  fullName           String       @map("full_name") @db.VarChar(120)
+  /// Nombre en minúsculas y sin acentos, para búsqueda.
+  fullNameSearch     String       @map("full_name_search") @db.VarChar(120)
+  phone              String?      @db.VarChar(20)
+  role               Role         @default(ESTUDIANTE)
+  active             Boolean      @default(true)
+  passwordHash       String       @map("password_hash")
+  mustChangePassword Boolean      @default(true) @map("must_change_password")
+  tokenVersion       Int          @default(0) @map("token_version")
+  createdAt          DateTime     @default(now()) @map("created_at") @db.Timestamptz(3)
+  updatedAt          DateTime     @updatedAt @map("updated_at") @db.Timestamptz(3)
+
+  payments           Payment[]    @relation("PaymentUser")
+  registeredPayments Payment[]    @relation("PaymentRegisteredBy")
+  reviewedPayments   Payment[]    @relation("PaymentReviewedBy")
+  voidedPayments     Payment[]    @relation("PaymentVoidedBy")
+  exchangeRates      ExchangeRate[]
+  auditLogs          AuditLog[]
+
+  @@unique([cedulaPrefix, cedulaDigits])
+  @@index([cedulaDigits])
+  @@index([cedulaDigits(ops: raw("gin_trgm_ops"))], map: "users_cedula_digits_trgm_idx", type: Gin)
+  @@index([fullNameSearch(ops: raw("gin_trgm_ops"))], map: "users_full_name_search_trgm_idx", type: Gin)
+  @@index([role, active])
+  @@map("users")
+}
+
+model Setting {
+  key       String   @id @db.VarChar(64)
+  value     String
+  updatedAt DateTime @updatedAt @map("updated_at") @db.Timestamptz(3)
+
+  @@map("settings")
+}
+
+model Period {
+  /// AAAA-MM
+  id       String    @id @db.Char(7)
+  feeUsd   Decimal   @map("fee_usd") @db.Decimal(10, 2)
+  openedAt DateTime  @default(now()) @map("opened_at") @db.Timestamptz(3)
+
+  payments Payment[]
+
+  @@map("periods")
+}
+
+model ExchangeRate {
+  id            String       @id @default(uuid()) @db.Uuid
+  currency      RateCurrency
+  ratePerUsd    Decimal      @map("rate_per_usd") @db.Decimal(18, 4)
+  effectiveDate DateTime     @map("effective_date") @db.Date
+  createdById   String       @map("created_by") @db.Uuid
+  createdAt     DateTime     @default(now()) @map("created_at") @db.Timestamptz(3)
+
+  createdBy     User         @relation(fields: [createdById], references: [id])
+
+  @@unique([currency, effectiveDate])
+  @@map("exchange_rates")
+}
+
+model Payment {
+  id             String        @id @default(uuid()) @db.Uuid
+  userId         String        @map("user_id") @db.Uuid
+  periodId       String        @map("period_id") @db.Char(7)
+  method         PaymentMethod
+  currency       Currency
+  amount         Decimal       @db.Decimal(18, 2)
+  /// Unidades de la moneda por 1 USD; 1 para USD. Congelada al registrar.
+  rate           Decimal       @db.Decimal(18, 4)
+  /// Fecha de la tasa usada; null para USD.
+  rateDate       DateTime?     @map("rate_date") @db.Date
+  amountUsd      Decimal       @map("amount_usd") @db.Decimal(10, 2)
+  status         PaymentStatus
+  reference      String?       @db.VarChar(30)
+  bank           String?       @db.VarChar(4)
+  payerPhone     String?       @map("payer_phone") @db.VarChar(20)
+  paidAt         DateTime      @map("paid_at") @db.Date
+  receiptKey     String?       @map("receipt_key")
+  note           String?       @db.VarChar(500)
+  registeredById String?       @map("registered_by") @db.Uuid
+  reviewedById   String?       @map("reviewed_by") @db.Uuid
+  reviewedAt     DateTime?     @map("reviewed_at") @db.Timestamptz(3)
+  reviewNote     String?       @map("review_note") @db.VarChar(500)
+  voidedById     String?       @map("voided_by") @db.Uuid
+  voidedAt       DateTime?     @map("voided_at") @db.Timestamptz(3)
+  voidReason     String?       @map("void_reason") @db.VarChar(500)
+  createdAt      DateTime      @default(now()) @map("created_at") @db.Timestamptz(3)
+
+  user           User          @relation("PaymentUser", fields: [userId], references: [id])
+  period         Period        @relation(fields: [periodId], references: [id])
+  registeredBy   User?         @relation("PaymentRegisteredBy", fields: [registeredById], references: [id])
+  reviewedBy     User?         @relation("PaymentReviewedBy", fields: [reviewedById], references: [id])
+  voidedBy       User?         @relation("PaymentVoidedBy", fields: [voidedById], references: [id])
+
+  @@index([periodId, status])
+  @@index([userId, periodId])
+  @@index([status, createdAt])
+  @@map("payments")
+}
+
+model AuditLog {
+  id        String   @id @default(uuid()) @db.Uuid
+  actorId   String?  @map("actor_id") @db.Uuid
+  action    String   @db.VarChar(64)
+  entity    String   @db.VarChar(32)
+  entityId  String   @map("entity_id") @db.VarChar(64)
+  before    Json?
+  after     Json?
+  createdAt DateTime @default(now()) @map("created_at") @db.Timestamptz(3)
+
+  actor     User?    @relation(fields: [actorId], references: [id])
+
+  @@index([entity, entityId])
+  @@map("audit_logs")
+}
