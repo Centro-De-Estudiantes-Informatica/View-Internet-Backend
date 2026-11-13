@@ -45,4 +45,7 @@ El almacenamiento local es RustFS (compatible con S3), con consola en http://loc
   esas líneas antes de aplicarla.
 - **Neon**: `DATABASE_URL` usa el host agrupado (`-pooler`) y `DIRECT_URL` el directo (migraciones).
 - **Límite por IP en el login**: la web llama a la API desde su servidor (BFF); para que el límite
-  sea por usuario, la web debe reenviar `X-Forwarded-For` y la API configurar `TRUST_PROXY`.
+  sea por usuario, la web manda la IP del navegador en `X-Client-IP` firmada con `CLIENT_IP_SECRET`
+  (el mismo valor en la web y en la API).
+- **Vercel**: la API se despliega como una función (NestJS sin configuración, entrada `src/main.ts`).
+  El bloqueo por cédula vive en Postgres para valer entre instancias, y las capturas son de máx. 4 MB.

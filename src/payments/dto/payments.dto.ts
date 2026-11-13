@@ -89,7 +89,7 @@ export class MobilePaymentDto {
 
 /** Solo para el OpenAPI: el formulario incluye el archivo, que no pasa por la validación del body. */
 export class MobilePaymentFormDto extends MobilePaymentDto {
-  @ApiPropertyOptional({ type: 'string', format: 'binary', description: 'JPG o PNG, máx. 5 MB' })
+  @ApiPropertyOptional({ type: 'string', format: 'binary', description: 'JPG o PNG, máx. 4 MB' })
   receipt?: unknown;
 }
 

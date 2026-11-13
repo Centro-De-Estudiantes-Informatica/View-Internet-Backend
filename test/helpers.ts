@@ -56,7 +56,7 @@ export async function createApp(): Promise<TestContext> {
 
 export async function resetDb(prisma: PrismaService): Promise<void> {
   await prisma.$executeRawUnsafe(
-    'TRUNCATE audit_logs, payments, exchange_rates, periods, settings, users CASCADE',
+    'TRUNCATE audit_logs, login_failures, payments, exchange_rates, periods, settings, users CASCADE',
   );
 }
 

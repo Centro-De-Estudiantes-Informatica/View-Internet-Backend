@@ -40,7 +40,8 @@ Se validan al arrancar (`src/config/env.ts`): si falta una obligatoria o tiene m
 | `LOGIN_MAX_FAILED_ATTEMPTS` | `5` | Fallos por cédula antes de bloquear |
 | `LOGIN_WINDOW_MS` | `900000` (15 min) | Ventana de los límites del login |
 | `LOGIN_IP_LIMIT` | `30` | Intentos de login por IP en la ventana |
-| `TRUST_PROXY` | `0` | Saltos de proxy de confianza para leer la IP de `X-Forwarded-For`. En producción detrás de un balanceador, normalmente `1` |
+| `TRUST_PROXY` | `0` | Saltos de proxy de confianza para leer la IP de `X-Forwarded-For`. En Vercel no hace falta |
+| `CLIENT_IP_SECRET` | — | Secreto compartido con la web (≥ 32 caracteres) para confiar en su header `X-Client-IP`. Debe ser igual en los dos proyectos |
 | `S3_ENDPOINT`, `S3_REGION`, `S3_BUCKET`, `S3_ACCESS_KEY_ID`, `S3_SECRET_ACCESS_KEY`, `S3_FORCE_PATH_STYLE` | — | Almacenamiento de capturas (R2, RustFS, Neon Object Storage…). Sin ellas, las capturas responden `STORAGE_NOT_CONFIGURED` |
 | `SEED_ADMIN_CEDULA`, `SEED_ADMIN_NAME`, `SEED_ADMIN_PASSWORD` | — | Solo para `npm run db:seed` |
 | `TEST_DATABASE_URL` | — | Base de las pruebas e2e (se vacía en cada corrida) |

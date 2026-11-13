@@ -167,3 +167,14 @@ model AuditLog {
   @@index([entity, entityId])
   @@map("audit_logs")
 }
+
+/// Intentos fallidos de inicio de sesión por clave (dígitos de la cédula), en Postgres para que
+/// el bloqueo valga entre todas las instancias de la API.
+model LoginFailure {
+  id        BigInt   @id @default(autoincrement())
+  key       String   @db.VarChar(64)
+  createdAt DateTime @default(now()) @map("created_at") @db.Timestamptz(3)
+
+  @@index([key, createdAt])
+  @@map("login_failures")
+}

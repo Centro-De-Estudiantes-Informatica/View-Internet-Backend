@@ -28,6 +28,12 @@ export const envSchema = z.object({
   LOGIN_IP_LIMIT: z.coerce.number().int().positive().default(30),
   /** Saltos de proxy de confianza para leer la IP real de X-Forwarded-For (0 = ninguno). */
   TRUST_PROXY: z.coerce.number().int().nonnegative().default(0),
+  /** Secreto compartido con la web para confiar en su header X-Client-IP (vacío = no confiar). */
+  CLIENT_IP_SECRET: z
+    .string()
+    .min(32, 'CLIENT_IP_SECRET debe tener al menos 32 caracteres')
+    .optional()
+    .or(z.literal('').transform(() => undefined)),
 
   S3_ENDPOINT: z.string().url().optional(),
   S3_REGION: z.string().default('auto'),

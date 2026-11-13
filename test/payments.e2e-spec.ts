@@ -234,10 +234,10 @@ describe('payments (e2e)', () => {
         await ctx.http().get(`/payments/${res.body.id}/receipt`).set(bearer(joseToken)).expect(403);
       });
 
-      it('rechaza capturas que no son JPG/PNG reales o de más de 5 MB', async () => {
+      it('rechaza capturas que no son JPG/PNG reales o de más de 4 MB', async () => {
         const fake = await mobile(joseToken, {}, Buffer.from('%PDF-1.7 no es imagen')).expect(422);
         expect(fake.body.code).toBe('INVALID_RECEIPT');
-        const big = Buffer.concat([PNG_BYTES, Buffer.alloc(5 * 1024 * 1024)]);
+        const big = Buffer.concat([PNG_BYTES, Buffer.alloc(4 * 1024 * 1024)]);
         await mobile(joseToken, { reference: '999999' }, big).expect(413);
         expect(ctx.storage.objects.size).toBe(0);
         expect(await ctx.prisma.payment.count()).toBe(0);

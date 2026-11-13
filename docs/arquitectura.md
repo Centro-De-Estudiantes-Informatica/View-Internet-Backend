@@ -98,14 +98,16 @@ Para no consultar la base en cada petición, `AuthStateService` guarda ese estad
 
 | Límite | Dónde | Por defecto |
 | --- | --- | --- |
-| Por cédula | `LoginAttemptsService` (en memoria) | 5 fallos en 15 min → `429 TOO_MANY_ATTEMPTS` |
+| Por cédula | `LoginAttemptsService` (tabla `login_failures`) | 5 fallos en 15 min → `429 TOO_MANY_ATTEMPTS` |
 | Por IP | `ThrottlerGuard` en `/auth/login` | `LOGIN_IP_LIMIT` (30) peticiones en `LOGIN_WINDOW_MS` (15 min) |
 
-Ambos viven en memoria: con varias instancias aplican por instancia. Como la web llama desde su servidor, reenvía la IP del navegador en `X-Forwarded-For`; para usarla, `TRUST_PROXY` debe indicar cuántos saltos de proxy son de confianza.
+El límite por cédula vive en Postgres, así que vale en todas las instancias (en Vercel corren varias a la vez). El límite por IP vive en memoria y aplica por instancia: es una defensa gruesa contra ráfagas.
+
+Como la web llama a la API desde su servidor, `req.ip` sería la IP de la web y Vercel sobrescribe `X-Forwarded-For`. Por eso la web manda la IP del navegador en `X-Client-IP` junto con `X-Client-IP-Secret`; la API solo la usa si ese secreto coincide con `CLIENT_IP_SECRET` (`src/auth/client-ip.ts`). Sin `CLIENT_IP_SECRET` se usa `req.ip`.
 
 ## Almacenamiento de capturas
 
-- El pago móvil acepta una imagen opcional en el campo `receipt` (multipart), de máximo 5 MB.
+- El pago móvil acepta una imagen opcional en el campo `receipt` (multipart), de máximo 4 MB (Vercel rechaza cuerpos de más de 4,5 MB antes de llegar a la API).
 - El tipo se detecta por los *magic bytes*, no por la extensión ni el `Content-Type`: solo JPG y PNG.
 - Se guarda en el bucket privado como `receipts/<userId>/<uuid>.<ext>`. Si la transacción del pago falla después, la captura se borra para no dejar archivos huérfanos.
 - Solo un `ADMIN` puede verla, mediante una URL firmada que vence en 5 minutos (`GET /payments/{id}/receipt`).

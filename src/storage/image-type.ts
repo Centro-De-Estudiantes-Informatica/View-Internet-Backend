@@ -18,4 +18,5 @@ export const RECEIPT_EXTENSION: Record<ReceiptMime, string> = {
   'image/png': 'png',
 };
 
-export const MAX_RECEIPT_BYTES = 5 * 1024 * 1024;
+/** 4 MB: Vercel rechaza cuerpos de más de 4,5 MB antes de llegar a la API. */
+export const MAX_RECEIPT_BYTES = 4 * 1024 * 1024;
