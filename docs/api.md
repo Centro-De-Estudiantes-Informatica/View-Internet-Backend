@@ -35,7 +35,7 @@ Los errores de validación agregan `details` con un mensaje por campo. La web tr
 | 409 | `LAST_ADMIN` | Quedaría sin administradores activos |
 | 409 | `DUPLICATE_REFERENCE` | Referencia y banco ya usados en un pago en revisión o aprobado |
 | 409 | `INVALID_PAYMENT_STATE` | El pago no está en el estado necesario (p. ej. ya fue revisado) |
-| 413 | `PAYLOAD_TOO_LARGE` | La captura supera 5 MB |
+| 413 | `PAYLOAD_TOO_LARGE` | La captura supera 4 MB |
 | 422 | `VALIDATION_ERROR` | Datos con formato inválido (ver `details`) |
 | 422 | `INVALID_CEDULA`, `INVALID_PERIOD`, `DATE_IN_FUTURE` | Cédula, periodo o fecha inválidos |
 | 422 | `INVALID_CURRENT_PASSWORD`, `PASSWORD_REUSED` | Cambio de contraseña |
@@ -69,7 +69,7 @@ Los errores de validación agregan `details` con un mensaje por campo. La web tr
 
 | Método y ruta | Descripción |
 | --- | --- |
-| `POST /me/payments/mobile` | Reporta un pago móvil (`multipart/form-data`): `reference`, `bank`, `payerPhone`, `paidAt`, `amount`, `periodo` opcional y `receipt` opcional (JPG/PNG ≤ 5 MB). Queda `EN_REVISION`. |
+| `POST /me/payments/mobile` | Reporta un pago móvil (`multipart/form-data`): `reference`, `bank`, `payerPhone`, `paidAt`, `amount`, `periodo` opcional y `receipt` opcional (JPG/PNG ≤ 4 MB). Queda `EN_REVISION`. |
 
 **Solo `ADMIN`: personas**
 

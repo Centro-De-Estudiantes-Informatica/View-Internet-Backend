@@ -26,20 +26,20 @@ export class AuthService {
   async login(rawCedula: string, password: string): Promise<SessionDto> {
     const cedula = parseCedula(rawCedula);
     const attemptKey = cedula ? cedula.digits : rawCedula.trim().toLowerCase();
-    this.attempts.assertNotLocked(attemptKey);
+    await this.attempts.assertNotLocked(attemptKey);
 
     const user = cedula ? await this.findByCedula(cedula.prefix, cedula.digits) : null;
     const valid = user
       ? await this.passwords.verify(password, user.passwordHash)
       : await this.passwords.verifyDummy(password);
     if (!user || !valid) {
-      this.attempts.recordFailure(attemptKey);
+      await this.attempts.recordFailure(attemptKey);
       throw new UnauthorizedException({
         code: 'INVALID_CREDENTIALS',
         message: 'Cédula o contraseña incorrecta',
       });
     }
-    this.attempts.reset(attemptKey);
+    await this.attempts.reset(attemptKey);
 
     if (!user.active) throw forbidden('ACCOUNT_DISABLED', 'La cuenta está desactivada');
     return this.issueSession(user);

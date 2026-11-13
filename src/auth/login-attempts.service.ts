@@ -1,20 +1,25 @@
 import { HttpStatus, Injectable } from '@nestjs/common';
 import { AppConfig } from '../config/app-config.service';
 import { BusinessError } from '../common/errors/business-error';
+import { PrismaService } from '../prisma/prisma.service';
 
 /**
  * Cuenta los intentos fallidos de inicio de sesión por cédula en una ventana deslizante.
- * Vive en memoria: con varias instancias el límite aplica por instancia.
+ * Se guardan en Postgres para que el bloqueo valga en todas las instancias de la API
+ * (en Vercel corren varias a la vez).
  */
 @Injectable()
 export class LoginAttemptsService {
-  private readonly failures = new Map<string, number[]>();
+  constructor(
+    private readonly prisma: PrismaService,
+    private readonly config: AppConfig,
+  ) {}
 
-  constructor(private readonly config: AppConfig) {}
-
-  assertNotLocked(key: string): void {
-    const recent = this.recent(key);
-    if (recent.length >= this.config.get('LOGIN_MAX_FAILED_ATTEMPTS')) {
+  async assertNotLocked(key: string): Promise<void> {
+    const recent = await this.prisma.loginFailure.count({
+      where: { key, createdAt: { gt: this.windowStart() } },
+    });
+    if (recent >= this.config.get('LOGIN_MAX_FAILED_ATTEMPTS')) {
       throw new BusinessError(
         'TOO_MANY_ATTEMPTS',
         'Demasiados intentos fallidos. Intenta de nuevo más tarde.',
@@ -23,20 +28,19 @@ export class LoginAttemptsService {
     }
   }
 
-  recordFailure(key: string): void {
-    const recent = this.recent(key);
-    recent.push(Date.now());
-    this.failures.set(key, recent);
+  async recordFailure(key: string): Promise<void> {
+    // De paso se borran los intentos que ya salieron de la ventana, para que la tabla no crezca.
+    await this.prisma.$transaction([
+      this.prisma.loginFailure.deleteMany({ where: { createdAt: { lte: this.windowStart() } } }),
+      this.prisma.loginFailure.create({ data: { key } }),
+    ]);
   }
 
-  reset(key: string): void {
-    this.failures.delete(key);
+  async reset(key: string): Promise<void> {
+    await this.prisma.loginFailure.deleteMany({ where: { key } });
   }
 
-  private recent(key: string): number[] {
-    const since = Date.now() - this.config.get('LOGIN_WINDOW_MS');
-    const recent = (this.failures.get(key) ?? []).filter((t) => t > since);
-    if (recent.length === 0) this.failures.delete(key);
-    return recent;
+  private windowStart(): Date {
+    return new Date(Date.now() - this.config.get('LOGIN_WINDOW_MS'));
   }
 }

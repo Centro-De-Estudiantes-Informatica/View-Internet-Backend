@@ -132,6 +132,10 @@ Si `prisma migrate dev` propone borrarlos en una migración nueva, hay que quita
 
 Historial de cambios: quién (`actor_id`), qué acción, sobre qué entidad y el antes/después en JSON. Ver la lista de acciones en [arquitectura](arquitectura.md#auditoría).
 
+### `login_failures`
+
+Intentos fallidos de inicio de sesión: `key` (dígitos de la cédula) y `created_at`. Sirve para bloquear una cédula tras 5 fallos en 15 minutos en todas las instancias de la API. No se relaciona con `users` (también cuenta cédulas que no existen); un login correcto borra las filas de esa cédula y cada fallo nuevo borra las que salieron de la ventana.
+
 ## Tipos de datos
 
 | Dato | Tipo en la base | En la API |
