@@ -6,10 +6,11 @@ Requisitos: Node.js 22+ y Docker.
 
 ```bash
 cp .env.example .env
-docker compose up -d db minio   # Postgres en :5434 (+ base de pruebas) y MinIO en :9000/:9001
+docker compose up -d db s3      # Postgres en :5434 (+ base de pruebas) y RustFS (S3) en :9000/:9001
 npm install
 npm run db:deploy               # aplica las migraciones
 npm run db:seed                 # crea el primer ADMIN desde SEED_ADMIN_*
+npm run s3:bucket               # crea el bucket de capturas (idempotente)
 npm run dev                     # API en http://localhost:3000, Swagger en /docs
 ```
 
@@ -18,7 +19,6 @@ Primeros pasos con la API vacía:
 1. Inicia sesión con la cédula y contraseña de `SEED_ADMIN_*`: la API exige cambiar la contraseña.
 2. Configura la cuota mensual (`PUT /billing/fee`). Sin ella no se pueden registrar pagos ni calcular estados.
 3. Carga la tasa del día de VES y COP (`POST /billing/rates`).
-4. Para las capturas de pago móvil, crea el bucket `receipts` en la consola de MinIO (http://localhost:9001, usuario `minio`, contraseña `minio-secret`).
 
 Con la web: en View-Internet usa `API_BASE_URL=http://localhost:3000` y `npm run dev` (puerto 3001).
 
@@ -41,7 +41,7 @@ Se validan al arrancar (`src/config/env.ts`): si falta una obligatoria o tiene m
 | `LOGIN_WINDOW_MS` | `900000` (15 min) | Ventana de los límites del login |
 | `LOGIN_IP_LIMIT` | `30` | Intentos de login por IP en la ventana |
 | `TRUST_PROXY` | `0` | Saltos de proxy de confianza para leer la IP de `X-Forwarded-For`. En producción detrás de un balanceador, normalmente `1` |
-| `S3_ENDPOINT`, `S3_REGION`, `S3_BUCKET`, `S3_ACCESS_KEY_ID`, `S3_SECRET_ACCESS_KEY`, `S3_FORCE_PATH_STYLE` | — | Almacenamiento de capturas (R2, MinIO, Neon Object Storage…). Sin ellas, las capturas responden `STORAGE_NOT_CONFIGURED` |
+| `S3_ENDPOINT`, `S3_REGION`, `S3_BUCKET`, `S3_ACCESS_KEY_ID`, `S3_SECRET_ACCESS_KEY`, `S3_FORCE_PATH_STYLE` | — | Almacenamiento de capturas (R2, RustFS, Neon Object Storage…). Sin ellas, las capturas responden `STORAGE_NOT_CONFIGURED` |
 | `SEED_ADMIN_CEDULA`, `SEED_ADMIN_NAME`, `SEED_ADMIN_PASSWORD` | — | Solo para `npm run db:seed` |
 | `TEST_DATABASE_URL` | — | Base de las pruebas e2e (se vacía en cada corrida) |
 

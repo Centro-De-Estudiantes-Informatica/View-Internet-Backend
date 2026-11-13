@@ -12,15 +12,16 @@ y en `/docs` (Swagger UI) con el servidor en marcha.
 
 ```bash
 cp .env.example .env
-docker compose up -d db minio      # Postgres en :5434 (+ base view_internet_test) y MinIO en :9000
+docker compose up -d db s3         # Postgres en :5434 (+ base view_internet_test) y RustFS (S3) en :9000
 npm install
 npm run db:deploy                  # aplica las migraciones
 npm run db:seed                    # primer ADMIN desde SEED_ADMIN_* (debe cambiar la contraseña)
+npm run s3:bucket                  # crea el bucket de capturas
 npm run dev
 ```
 
-Para las capturas de pago móvil en local, crea el bucket `receipts` en la consola de MinIO
-(http://localhost:9001, usuario `minio` / `minio-secret`).
+El almacenamiento local es RustFS (compatible con S3), con consola en http://localhost:9001
+(usuario `minio` / `minio-secret`).
 
 ## Scripts
 

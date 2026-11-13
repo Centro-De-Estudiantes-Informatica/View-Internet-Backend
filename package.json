@@ -23,6 +23,7 @@
     "db:deploy": "prisma migrate deploy",
     "db:seed": "prisma db seed",
     "postinstall": "prisma generate",
+    "s3:bucket": "ts-node --transpile-only scripts/create-bucket.ts",
     "smoke": "ts-node --transpile-only scripts/smoke.ts"
   },
   "prisma": {

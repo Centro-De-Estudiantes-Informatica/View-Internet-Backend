@@ -10,7 +10,7 @@ import { BusinessError } from '../common/errors/business-error';
 import { AppConfig } from '../config/app-config.service';
 import { ReceiptStorage } from './receipt-storage';
 
-/** Bucket privado S3 compatible (Cloudflare R2, Neon Object Storage, MinIO, AWS S3). */
+/** Bucket privado S3 compatible (Cloudflare R2, Neon Object Storage, RustFS, AWS S3). */
 @Injectable()
 export class S3ReceiptStorage extends ReceiptStorage {
   private readonly client?: S3Client;
