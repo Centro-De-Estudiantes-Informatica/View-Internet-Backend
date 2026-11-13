@@ -10,7 +10,7 @@
 | class-validator / class-transformer | Validación de cada body y query |
 | @nestjs/jwt + bcryptjs | Tokens de acceso y hash de contraseñas |
 | @nestjs/throttler | Límite de peticiones por IP en el login |
-| AWS SDK v3 (S3) | Capturas de pago móvil en almacenamiento compatible con S3 (R2, MinIO…) |
+| AWS SDK v3 (S3) | Capturas de pago móvil en almacenamiento compatible con S3 (R2, RustFS…) |
 | @nestjs/swagger | OpenAPI en `/docs` y `openapi.json` |
 | zod | Validación de variables de entorno al arrancar |
 | Jest + Supertest | Pruebas unitarias y e2e |
