@@ -178,6 +178,71 @@
         ]
       }
     },
+    "/billing/payment-destination": {
+      "get": {
+        "operationId": "BillingController_paymentDestination",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PaymentDestinationDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Datos del pago móvil de la sede (a dónde pagan los estudiantes)",
+        "tags": [
+          "billing"
+        ]
+      },
+      "put": {
+        "operationId": "BillingController_setPaymentDestination",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/SetPaymentDestinationDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PaymentDestinationDto"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Requiere rol ADMIN"
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Cambiar los datos del pago móvil de la sede",
+        "tags": [
+          "billing"
+        ]
+      }
+    },
     "/billing/rates": {
       "post": {
         "operationId": "BillingController_setRate",
@@ -1447,6 +1512,60 @@
           "feeUsd",
           "currentPeriod",
           "currentPeriodFeeUsd"
+        ]
+      },
+      "PaymentDestinationDto": {
+        "type": "object",
+        "properties": {
+          "bank": {
+            "type": "string",
+            "example": "0134",
+            "nullable": true
+          },
+          "phone": {
+            "type": "string",
+            "example": "04141234567",
+            "nullable": true
+          },
+          "document": {
+            "type": "string",
+            "example": "J-123456789",
+            "nullable": true
+          },
+          "configured": {
+            "type": "boolean",
+            "description": "false si la sede todavía no cargó sus datos"
+          }
+        },
+        "required": [
+          "bank",
+          "phone",
+          "document",
+          "configured"
+        ]
+      },
+      "SetPaymentDestinationDto": {
+        "type": "object",
+        "properties": {
+          "bank": {
+            "type": "string",
+            "example": "0134",
+            "description": "Código SUDEBAN de 4 dígitos del banco"
+          },
+          "phone": {
+            "type": "string",
+            "example": "04141234567"
+          },
+          "document": {
+            "type": "string",
+            "example": "J-123456789",
+            "description": "Cédula o RIF (V, E, J, G o P)"
+          }
+        },
+        "required": [
+          "bank",
+          "phone",
+          "document"
         ]
       },
       "SetRateDto": {

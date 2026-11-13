@@ -123,6 +123,7 @@ Como la web llama a la API desde su servidor, `req.ip` sería la IP de la web y 
 | `ROLE_CHANGED` | Cambio de rol |
 | `PASSWORD_RESET` | Un administrador restablece una contraseña |
 | `FEE_UPDATED` | Cambio de la cuota mensual |
+| `PAYMENT_DESTINATION_UPDATED` | Cambio de los datos del pago móvil de la sede |
 | `RATE_CREATED`, `RATE_UPDATED` | Registro o corrección de una tasa |
 | `PAYMENT_CASH_REGISTERED`, `PAYMENT_MOBILE_REPORTED` | Alta de un pago |
 | `PAYMENT_APPROVED`, `PAYMENT_REJECTED`, `PAYMENT_VOIDED` | Revisión y anulación |

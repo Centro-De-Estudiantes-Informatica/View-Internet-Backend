@@ -6,10 +6,15 @@ import { Decimal, fromUsd, money, rate } from '../common/domain/money';
 import { unprocessable } from '../common/errors/business-error';
 import { AuditService } from '../audit/audit.service';
 import { PrismaService } from '../prisma/prisma.service';
-import type { BillingCurrentDto, CurrentRateDto, FeeDto } from './dto/billing.dto';
+import type {
+  BillingCurrentDto,
+  CurrentRateDto,
+  FeeDto,
+  PaymentDestinationDto,
+} from './dto/billing.dto';
 import { PeriodsService } from './periods.service';
 import { RatesService } from './rates.service';
-import { SettingsService } from './settings.service';
+import { PaymentDestination, SettingsService } from './settings.service';
 
 @Injectable()
 export class BillingService {
@@ -73,9 +78,47 @@ export class BillingService {
     };
   }
 
+  async paymentDestination(): Promise<PaymentDestinationDto> {
+    return toDestinationDto(await this.settings.paymentDestination());
+  }
+
+  async setPaymentDestination(
+    destination: PaymentDestination,
+    actorId: string,
+  ): Promise<PaymentDestinationDto> {
+    // Se guarda con guion (V-12345678) para mostrarlo tal cual.
+    const value = { ...destination, document: formatDocument(destination.document) };
+    await this.prisma.$transaction(async (tx) => {
+      const previous = await this.settings.paymentDestination(tx);
+      await this.settings.setPaymentDestination(tx, value);
+      await this.audit.log(tx, {
+        actorId,
+        action: 'PAYMENT_DESTINATION_UPDATED',
+        entity: 'Setting',
+        entityId: 'mobilePaymentDestination',
+        before: previous ? { ...previous } : undefined,
+        after: { ...value },
+      });
+    });
+    return toDestinationDto(value);
+  }
+
   assertNotFuture(date: string): void {
     if (date > this.periods.today()) {
       throw unprocessable('DATE_IN_FUTURE', 'La fecha no puede ser futura');
     }
   }
+}
+
+function formatDocument(document: string): string {
+  return `${document.charAt(0)}-${document.slice(1)}`;
+}
+
+function toDestinationDto(d: PaymentDestination | null): PaymentDestinationDto {
+  return {
+    bank: d?.bank ?? null,
+    phone: d?.phone ?? null,
+    document: d?.document ?? null,
+    configured: d !== null,
+  };
 }

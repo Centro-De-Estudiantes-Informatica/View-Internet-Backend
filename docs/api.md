@@ -98,6 +98,8 @@ Los errores de validación agregan `details` con un mensaje por campo. La web tr
 | Método y ruta | Descripción |
 | --- | --- |
 | `PUT /billing/fee` | `{ feeUsd }` → `{ feeUsd, currentPeriod, currentPeriodFeeUsd }` |
+| `GET /billing/payment-destination` | Datos del pago móvil de la sede → `{ bank, phone, document, configured }` (cualquier sesión) |
+| `PUT /billing/payment-destination` | Solo admin: `{ bank (código de 4 dígitos), phone, document (V/E/J/G/P) }` |
 | `POST /billing/rates` | `{ currency: "VES" \| "COP", ratePerUsd, effectiveDate? }` (por defecto, hoy) |
 | `GET /billing/rates` | Historial; filtros `currency` y `limit` (30 por defecto, máximo 365) |
 | `GET /metrics/summary` | Resumen del periodo (`?periodo=`, por defecto el actual) |

@@ -11,8 +11,10 @@ import {
   BillingCurrentDto,
   FeeDto,
   ListRatesQuery,
+  PaymentDestinationDto,
   RateDto,
   SetFeeDto,
+  SetPaymentDestinationDto,
   SetRateDto,
 } from './dto/billing.dto';
 import { PeriodsService } from './periods.service';
@@ -43,6 +45,24 @@ export class BillingController {
   @ApiOkResponse({ type: FeeDto })
   setFee(@Body() dto: SetFeeDto, @CurrentUser() user: AuthUser): Promise<FeeDto> {
     return this.billing.setFee(new Decimal(dto.feeUsd), user.id);
+  }
+
+  @Get('payment-destination')
+  @ApiOperation({ summary: 'Datos del pago móvil de la sede (a dónde pagan los estudiantes)' })
+  @ApiOkResponse({ type: PaymentDestinationDto })
+  paymentDestination(): Promise<PaymentDestinationDto> {
+    return this.billing.paymentDestination();
+  }
+
+  @Roles(Role.ADMIN)
+  @Put('payment-destination')
+  @ApiOperation({ summary: 'Cambiar los datos del pago móvil de la sede' })
+  @ApiOkResponse({ type: PaymentDestinationDto })
+  setPaymentDestination(
+    @Body() dto: SetPaymentDestinationDto,
+    @CurrentUser() user: AuthUser,
+  ): Promise<PaymentDestinationDto> {
+    return this.billing.setPaymentDestination(dto, user.id);
   }
 
   @Roles(Role.ADMIN)
