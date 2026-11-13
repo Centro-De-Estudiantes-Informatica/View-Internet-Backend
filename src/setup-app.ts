@@ -23,6 +23,22 @@ export function setupApp(app: INestApplication): OpenAPIObject {
     .addBearerAuth()
     .build();
   const document = SwaggerModule.createDocument(app, config);
-  SwaggerModule.setup('docs', app, document, { jsonDocumentUrl: 'docs-json' });
+  SwaggerModule.setup('docs', app, document, {
+    jsonDocumentUrl: 'docs-json',
+    // En Vercel la API es una función y no incluye los archivos de swagger-ui-dist: se sirven del CDN.
+    ...(process.env.VERCEL ? swaggerFromCdn() : {}),
+  });
   return document;
+}
+
+const SWAGGER_UI_CDN = 'https://cdn.jsdelivr.net/npm/swagger-ui-dist@5.32.13';
+
+function swaggerFromCdn() {
+  return {
+    customCssUrl: `${SWAGGER_UI_CDN}/swagger-ui.css`,
+    customJs: [
+      `${SWAGGER_UI_CDN}/swagger-ui-bundle.js`,
+      `${SWAGGER_UI_CDN}/swagger-ui-standalone-preset.js`,
+    ],
+  };
 }

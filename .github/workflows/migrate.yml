@@ -1,6 +1,6 @@
 # Aplica las migraciones pendientes a la base de producción antes de desplegar la API.
 # Requiere el secreto DIRECT_URL (host directo de Neon, sin -pooler) en el entorno "production".
-# El paso de despliegue de la API se agrega cuando se elija el hosting (tarea 8.1).
+# La API se despliega en Vercel; las migraciones deben aplicarse antes de que la versión nueva reciba tráfico.
 name: Migrate database
 
 on:

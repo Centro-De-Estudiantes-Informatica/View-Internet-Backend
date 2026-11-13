@@ -83,16 +83,25 @@ Si cambias un DTO o un controlador, corre `npm run openapi` y commitea `openapi.
 
 ## Despliegue
 
-El `Dockerfile` genera una imagen genérica (Node 22, usuario sin privilegios, puerto 3000) que sirve para Render, Railway, Fly.io o cualquier host de contenedores. El hosting definitivo todavía no está elegido.
+La API corre en **Vercel** como una función (NestJS sin configuración, entrada `src/main.ts`). `vercel.json` fija el framework y la región `iad1`, la misma de Neon (`aws-us-east-1`).
 
-Pasos:
+| Pieza | Producción | Vistas previas |
+| --- | --- | --- |
+| Proyecto Vercel | `view-internet-api` (entorno Production) | `view-internet-api` (entorno Preview) |
+| Neon (proyecto `view-internet`) | rama `main` | rama `preview` |
+| Bucket de capturas | `receipts` en la rama `main` (Neon Object Storage) | `receipts` en la rama `preview` |
 
-1. Crear la base en Neon (rama `main` para producción) y el bucket privado de capturas.
-2. Configurar las variables de entorno de producción, con `JWT_SECRET` nuevo y `TRUST_PROXY` según el hosting.
-3. Aplicar las migraciones (workflow `migrate.yml` o `npm run db:deploy`) y correr la semilla una vez.
-4. Desplegar la imagen y verificar `GET /health` → `{ "status": "ok", "db": "ok" }`.
-5. Correr `npm run smoke` contra la URL pública.
-6. Configurar en la web `API_BASE_URL` con esa URL.
+Cada entorno de Vercel tiene sus propias variables: `DATABASE_URL` (host `-pooler`), `DIRECT_URL`, `JWT_SECRET`, `CLIENT_IP_SECRET` (igual que en la web), `APP_TIMEZONE` y las `S3_*` de su rama. `TRUST_PROXY` no hace falta en Vercel.
+
+Pasos para una versión nueva:
+
+1. Si hay migraciones, el workflow `migrate.yml` las aplica a producción al hacer push a `main`. Hay que aplicarlas **antes** de que la versión nueva reciba tráfico.
+2. Desplegar (`vercel deploy --prod`, o automático al hacer push si el repo está conectado a Vercel) y verificar `GET /health` → `{ "status": "ok", "db": "ok" }`.
+3. Correr `npm run smoke` contra la URL pública.
+
+Swagger (`/docs`) toma sus archivos estáticos del CDN cuando corre en Vercel, porque la función no incluye `swagger-ui-dist`.
+
+El `Dockerfile` sigue sirviendo para otros hosts de contenedores (Render, Railway, Fly.io); en ese caso hay que configurar `TRUST_PROXY`.
 
 ## Problemas frecuentes
 
