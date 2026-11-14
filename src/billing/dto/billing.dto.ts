@@ -1,6 +1,6 @@
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import { RateCurrency } from '@prisma/client';
-import { Type } from 'class-transformer';
+import { Transform, Type } from 'class-transformer';
 import { IsEnum, IsInt, IsOptional, Matches, Max, Min } from 'class-validator';
 import { DATE_RE } from '../../common/domain/period';
 import { IsPositiveDecimalString } from '../../common/validation/decimal-string';
@@ -79,4 +79,33 @@ export class FeeDto {
   @ApiProperty({ example: '2026-10' }) currentPeriod!: string;
   @ApiProperty({ example: '5.00', description: 'Cuota congelada del periodo actual' })
   currentPeriodFeeUsd!: string;
+}
+
+const compact = ({ value }: { value: unknown }) =>
+  typeof value === 'string' ? value.replace(/[\s\-().]/g, '').toUpperCase() : value;
+
+/** Datos del pago móvil de la sede que ven los estudiantes al reportar. */
+export class SetPaymentDestinationDto {
+  @ApiProperty({ example: '0134', description: 'Código SUDEBAN de 4 dígitos del banco' })
+  @Matches(/^\d{4}$/, { message: 'bank debe ser el código de 4 dígitos del banco' })
+  bank!: string;
+
+  @ApiProperty({ example: '04141234567' })
+  @Transform(compact)
+  @Matches(/^\+?\d{7,15}$/, { message: 'phone debe tener entre 7 y 15 dígitos' })
+  phone!: string;
+
+  @ApiProperty({ example: 'J-123456789', description: 'Cédula o RIF (V, E, J, G o P)' })
+  @Transform(compact)
+  @Matches(/^[VEJGP]\d{5,10}$/, {
+    message: 'document debe ser una cédula o RIF, p. ej. V-12345678 o J-123456789',
+  })
+  document!: string;
+}
+
+export class PaymentDestinationDto {
+  @ApiProperty({ example: '0134', nullable: true, type: String }) bank!: string | null;
+  @ApiProperty({ example: '04141234567', nullable: true, type: String }) phone!: string | null;
+  @ApiProperty({ example: 'J-123456789', nullable: true, type: String }) document!: string | null;
+  @ApiProperty({ description: 'false si la sede todavía no cargó sus datos' }) configured!: boolean;
 }

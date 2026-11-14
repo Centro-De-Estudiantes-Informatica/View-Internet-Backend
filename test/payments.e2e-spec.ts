@@ -494,4 +494,59 @@ describe('payments (e2e)', () => {
       expect(res.body.fee.COP).toBeNull();
     });
   });
+  describe('datos del pago móvil de la sede', () => {
+    it('sin configurar: todos los campos en null', async () => {
+      const res = await ctx
+        .http()
+        .get('/billing/payment-destination')
+        .set(bearer(joseToken))
+        .expect(200);
+      expect(res.body).toEqual({ bank: null, phone: null, document: null, configured: false });
+    });
+
+    it('el administrador los cambia, el estudiante los ve y queda en la auditoría', async () => {
+      const res = await ctx
+        .http()
+        .put('/billing/payment-destination')
+        .set(bearer(adminToken))
+        .send({ bank: '0134', phone: '0414-123.45.67', document: 'j 123456789' })
+        .expect(200);
+      const expected = {
+        bank: '0134',
+        phone: '04141234567',
+        document: 'J-123456789',
+        configured: true,
+      };
+      expect(res.body).toEqual(expected);
+      const seen = await ctx
+        .http()
+        .get('/billing/payment-destination')
+        .set(bearer(joseToken))
+        .expect(200);
+      expect(seen.body).toEqual(expected);
+      const log = await ctx.prisma.auditLog.findFirstOrThrow({
+        where: { action: 'PAYMENT_DESTINATION_UPDATED' },
+      });
+      expect(log.after).toEqual({ bank: '0134', phone: '04141234567', document: 'J-123456789' });
+    });
+
+    it('solo un administrador puede cambiarlos', async () => {
+      await ctx
+        .http()
+        .put('/billing/payment-destination')
+        .set(bearer(joseToken))
+        .send({ bank: '0134', phone: '04141234567', document: 'V-12345678' })
+        .expect(403);
+    });
+
+    it('valida banco, teléfono y documento', async () => {
+      const res = await ctx
+        .http()
+        .put('/billing/payment-destination')
+        .set(bearer(adminToken))
+        .send({ bank: 'Banesco', phone: '12', document: 'X-1' })
+        .expect(422);
+      expect(res.body.code).toBe('VALIDATION_ERROR');
+    });
+  });
 });
