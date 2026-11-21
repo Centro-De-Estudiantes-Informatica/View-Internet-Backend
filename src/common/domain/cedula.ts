@@ -29,8 +29,9 @@ export function normalizeCedula(input: string): { prefix: CedulaPrefix; digits: 
   return { prefix: parsed.prefix ?? 'V', digits: parsed.digits };
 }
 
-/** Formato de presentación: `V-28.123.456`. */
-export function formatCedula(prefix: CedulaPrefix, digits: string): string {
+/** Formato de presentación: `V-28.123.456`, o `""` si no tiene cédula. */
+export function formatCedula(prefix: CedulaPrefix | null, digits: string | null): string {
+  if (!prefix || !digits) return '';
   return `${prefix}-${digits.replace(/\B(?=(\d{3})+(?!\d))/g, '.')}`;
 }
 

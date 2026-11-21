@@ -40,8 +40,11 @@ export class UsersService {
   ) {}
 
   async create(dto: CreateUserDto, actorId: string): Promise<CreatedUserDto> {
-    const cedula = normalizeCedula(dto.cedula);
-    if (!cedula) throw unprocessable('INVALID_CEDULA', 'La cédula no es válida');
+    const role = dto.role ?? Role.ESTUDIANTE;
+    const cedula = role === Role.ADMIN ? normalizeCedula(dto.cedula ?? '') : null;
+    if (role === Role.ADMIN && !cedula) {
+      throw unprocessable('INVALID_CEDULA', 'La cédula es obligatoria para administradores');
+    }
 
     const temporaryPassword = this.passwords.temporary();
     const passwordHash = await this.passwords.hash(temporaryPassword);
@@ -49,12 +52,12 @@ export class UsersService {
       const user = await this.prisma.$transaction(async (tx) => {
         const created = await tx.user.create({
           data: {
-            cedulaPrefix: cedula.prefix,
-            cedulaDigits: cedula.digits,
+            cedulaPrefix: cedula?.prefix ?? null,
+            cedulaDigits: cedula?.digits ?? null,
             fullName: dto.fullName,
             fullNameSearch: searchableText(dto.fullName),
             phone: dto.phone ?? null,
-            role: dto.role ?? Role.ESTUDIANTE,
+            role,
             passwordHash,
             mustChangePassword: true,
           },
@@ -141,6 +144,9 @@ export class UsersService {
       const target = await tx.user.findUnique({ where: { id } });
       if (!target) throw notFound('USER_NOT_FOUND', 'La persona no existe');
       if (target.role === role) return target;
+      if (role === Role.ADMIN && (!target.cedulaPrefix || !target.cedulaDigits)) {
+        throw unprocessable('INVALID_CEDULA', 'Un administrador debe tener cédula registrada');
+      }
       if (target.role === Role.ADMIN && target.active && activeAdmins <= 1) {
         throw lastAdmin();
       }
@@ -263,7 +269,8 @@ function escapeLike(term: string): string {
 
 function auditView(user: User): Prisma.InputJsonObject {
   return {
-    cedula: `${user.cedulaPrefix}${user.cedulaDigits}`,
+    cedula:
+      user.cedulaPrefix && user.cedulaDigits ? `${user.cedulaPrefix}${user.cedulaDigits}` : '',
     fullName: user.fullName,
     phone: user.phone,
     role: user.role,

@@ -25,10 +25,12 @@ const trimPhone = ({ value }: { value: unknown }) =>
 const trim = ({ value }: { value: unknown }) => (typeof value === 'string' ? value.trim() : value);
 
 export class CreateUserDto {
-  @ApiProperty({ example: 'V-30.555.111' })
+  @ApiPropertyOptional({ example: 'V-30.555.111', description: 'Obligatoria solo para administradores' })
+  @IsOptional()
+  @ValidateIf((_o, v) => v !== undefined && v !== '')
   @IsString()
   @MaxLength(20)
-  cedula!: string;
+  cedula?: string;
 
   @ApiProperty({ example: 'José Rodríguez' })
   @Transform(trim)
